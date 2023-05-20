@@ -27,8 +27,8 @@ client.on("connect", () => {
   console.log("Connected to MQTT broker");
 });
 
-// MQTT client disconnected event
-client.on("disconnect", () => {
+// MQTT client close event
+client.on("close", () => {
   console.log("Disconnected from MQTT broker");
 });
 
@@ -74,41 +74,12 @@ setInterval(() => {
   }
 
   const message = randomNumber.toString();
-  const deviceTopic = "SITI/khalid/test";
+  const deviceTopic = "SITI/khalid/prod";
   client.publish(deviceTopic, message, (err) => {
     if (err) {
       console.error("Error publishing message:", err);
     } else {
-      console.log("Published message:", message);
-    }
-  });
-}, 60000); // Send message every minute
-
-// Send random number every minute
-setInterval(() => {
-  let randomNumber;
-  if (isNighttime()) {
-    randomNumber = 0;
-  } else {
-    const probability = Math.random();
-    if (probability < 0.3) {
-      randomNumber = 0; // 30% probability for 0
-    } else if (probability < 0.5) {
-      randomNumber = 80; // 20% probability for 80
-    } else if (probability < 0.55) {
-      randomNumber = getRandomNumber(15, 80); // 5% probability for values between 15 and 80
-    } else {
-      randomNumber = getRandomNumber(80, 85); // Remaining 54% probability for values between 80 and 85
-    }
-  }
-
-  const message = randomNumber.toString();
-  const deviceTopic = "SITI/khalid/test";
-  client.publish(deviceTopic, message, (err) => {
-    if (err) {
-      console.error("Error publishing message:", err);
-    } else {
-      console.log("Published message:", message);
+      console.log(message);
     }
   });
 }, 60000); // Send message every minute
