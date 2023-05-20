@@ -69,4 +69,4 @@ setInterval(() => {
       console.log("Published message:", message);
     }
   });
-}, 1000); // Send message every minute
+}, 6000); // Send message every minute
