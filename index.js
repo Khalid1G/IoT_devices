@@ -49,12 +49,12 @@ setInterval(() => {
     randomNumber = 0;
   } else {
     const probability = Math.random();
-    if (probability < 0.1) {
-      randomNumber = 0; // 10% probability for 0
-    } else if (probability < 0.3) {
-      randomNumber = 80; // 20% probability for 80
+    if (probability < 0.2) {
+      randomNumber = 0; // 20% probability for 0
     } else if (probability < 0.4) {
-      randomNumber = getRandomNumber(15, 80); // 10% probability for values between 15 and 80
+      randomNumber = 80; // 20% probability for 80
+    } else if (probability < 0.45) {
+      randomNumber = getRandomNumber(15, 80); // 5% probability for values between 15 and 80
     } else {
       randomNumber = getRandomNumber(80, 85); // Remaining 60% probability for values between 80 and 85
     }
@@ -69,4 +69,4 @@ setInterval(() => {
       console.log("Published message:", message);
     }
   });
-}, 6000); // Send message every minute
+}, 60000); // Send message every minute
