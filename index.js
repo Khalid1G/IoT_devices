@@ -3,7 +3,7 @@ const mqtt = require("mqtt");
 // MQTT broker details
 const brokerUrl = "mqtt://gounane.ovh";
 const options = {
-  clientId: "mqtt-test-khalid",
+  clientId: "mqtt-client-khalid",
   username: "chaari",
   password: "chaari2023",
 };
@@ -19,67 +19,68 @@ function isNighttime() {
   return currentHour >= 22 || currentHour < 6;
 }
 
-// Create MQTT client
-const client = mqtt.connect(brokerUrl, options);
+// Create MQTT clients
+const client1 = mqtt.connect(brokerUrl, options);
+const client2 = mqtt.connect(brokerUrl, options);
+const client3 = mqtt.connect(brokerUrl, options);
 
-// MQTT client connected event
-client.on("connect", () => {
-  console.log("Connected to MQTT broker");
+// MQTT client connected events
+client1.on("connect", () => {
+  console.log("Connected to MQTT broker - Device 1");
 });
 
-// MQTT client close event
-client.on("close", () => {
-  console.log("Disconnected from MQTT broker");
+client2.on("connect", () => {
+  console.log("Connected to MQTT broker - Device 2");
 });
 
-// MQTT client error event
-client.on("error", (err) => {
-  console.error("MQTT client error:", err);
+client3.on("connect", () => {
+  console.log("Connected to MQTT broker - Device 3");
 });
 
-//MQTT reconnect
-client.on("reconnect", () => {
-  console.log("Reconnected to MQTT broker");
-});
+// Send random number for each device every minute with random delays
+function sendRandomNumber(deviceName, client) {
+  const randomNumber = isNighttime() ? 0 : generateRandomNumber();
+  const deviceTopic = `SITI/test/${deviceName}`;
 
-// Check if it's lunchtime (e.g., between 12 PM and 1 PM)
-function isLunchtime() {
-  const currentHour = new Date().getHours();
-  const currentMinute = new Date().getMinutes();
-  return currentHour === 12 && currentMinute >= 0 && currentMinute < 1;
+  setTimeout(() => {
+    client.publish(deviceTopic, randomNumber.toString(), (err) => {
+      if (err) {
+        console.error(`Error publishing message for ${deviceName}:`, err);
+      } else {
+        console.log(`Published message for ${deviceName}:`, randomNumber);
+      }
+    });
+  }, getRandomDelay());
 }
 
-// Check if it's time for pause (e.g., between 2 PM and 3 PM)
-function isPauseTime() {
-  const currentHour = new Date().getHours();
-  return currentHour === 14;
+// Generate random delay between 0 and 30 seconds
+function getRandomDelay() {
+  return Math.random() * 30000;
 }
 
-// Send random number every minute
-setInterval(() => {
-  let randomNumber;
-  if (isNighttime() || isLunchtime() || isPauseTime()) {
-    randomNumber = 0;
+// Generate random number based on probability distribution
+function generateRandomNumber() {
+  const probability = Math.random();
+  if (probability < 0.1) {
+    return 0; // 10% probability for 0
+  } else if (probability < 0.3) {
+    return 80; // 20% probability for 80
+  } else if (probability < 0.4) {
+    return getRandomNumber(15, 80); // 10% probability for values between 15 and 80
   } else {
-    const probability = Math.random();
-    if (probability < 0.2) {
-      randomNumber = 0; // 20% probability for 0
-    } else if (probability < 0.5) {
-      randomNumber = 80; // 30% probability for 80
-    } else if (probability < 0.55) {
-      randomNumber = getRandomNumber(15, 80); // 5% probability for values between 15 and 80
-    } else {
-      randomNumber = getRandomNumber(80, 85); // Remaining 45% probability for values between 80 and 85
-    }
+    return getRandomNumber(80, 85); // Remaining 60% probability for values between 80 and 85
   }
+}
 
-  const message = randomNumber.toString();
-  const deviceTopic = "SITI/khalid/prod";
-  client.publish(deviceTopic, message, (err) => {
-    if (err) {
-      console.error("Error publishing message:", err);
-    } else {
-      console.log(message);
-    }
-  });
-}, 60000); // Send message every minute
+// Send random number for each device
+setInterval(() => {
+  sendRandomNumber("d01", client1);
+}, 60000); // Send message for Device 1 every minute
+
+setInterval(() => {
+  sendRandomNumber("d02", client2);
+}, 60000); // Send message for Device 2 every minute
+
+setInterval(() => {
+  sendRandomNumber("d03", client3);
+}, 60000); // Send message for Device 3 every minute
