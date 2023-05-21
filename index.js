@@ -18,16 +18,17 @@ function isNighttime() {
   return currentHour >= 22 || currentHour < 6;
 }
 
-for (let i = 0; i < 20; i++) {
-  const client = mqtt.connect(MqttUrl, createOptions(`mqtt-client-${i}`));
+for (let i = 1; i < 11; i++) {
+  const device = i.toString().padStart(2, "0");
+  const client = mqtt.connect(MqttUrl, createOptions(`mqtt-client-${device}`));
   client.on("connect", () => {
-    console.log(`Connected to MQTT broker - Device ${i}`);
+    console.log(`Connected to MQTT broker - Device ${device}`);
   });
   client.on("error", (err) => {
-    console.error(`Error connecting to MQTT broker - Device ${i}:`, err);
+    console.error(`Error connecting to MQTT broker - Device ${device}:`, err);
   });
   client.on("close", () => {
-    console.log(`Disconnected from MQTT broker - Device ${i}`);
+    console.log(`Disconnected from MQTT broker - Device ${device}`);
   });
 
   // Send random number for each device
