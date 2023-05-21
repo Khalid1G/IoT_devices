@@ -58,10 +58,9 @@ function createOptions(clientId) {
 
 // Send random number for each device every minute with random delays
 function sendRandomNumber(deviceName, client) {
-  let randomNumber =
-    isNighttime() || isLunchtime() || isPauseTime()
-      ? 0
-      : generateRandomNumber();
+  let randomNumber;
+  if (isNighttime() || isLunchtime() || isPauseTime()) randomNumber = 0;
+  else randomNumber = generateRandomNumber();
 
   const deviceTopic = `SITI/test/${deviceName}`;
 
@@ -78,7 +77,7 @@ function sendRandomNumber(deviceName, client) {
 function isLunchtime() {
   const currentHour = new Date().getHours();
   const currentMinute = new Date().getMinutes();
-  return currentHour === 12 && currentMinute >= 0 && currentMinute < 1;
+  return currentHour === 12 && currentMinute >= 0 && currentMinute < 59;
 }
 
 // Check if it's time for pause (e.g., between 2 PM and 3 PM)
