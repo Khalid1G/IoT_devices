@@ -1,12 +1,10 @@
+require("dotenv").config();
 const mqtt = require("mqtt");
 
 // MQTT broker details
-const brokerUrl = "mqtt://gounane.ovh";
-const options = {
-  clientId: "mqtt-client-khalid",
-  username: "chaari",
-  password: "chaari2023",
-};
+const { MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD } = process.env;
+
+const MqttUrl = `${MQTT_HOST}:${MQTT_PORT}`;
 
 // Generate a random number between min and max (inclusive)
 function getRandomNumber(min, max) {
@@ -20,9 +18,18 @@ function isNighttime() {
 }
 
 // Create MQTT clients
-const client1 = mqtt.connect(brokerUrl, options);
-const client2 = mqtt.connect(brokerUrl, options);
-const client3 = mqtt.connect(brokerUrl, options);
+const client1 = mqtt.connect(MqttUrl, createOptions("mqtt-client-1"));
+const client2 = mqtt.connect(MqttUrl, createOptions("mqtt-client-2"));
+const client3 = mqtt.connect(MqttUrl, createOptions("mqtt-client-3"));
+
+// Function to create MQTT options
+function createOptions(clientId) {
+  return {
+    clientId: clientId,
+    username: MQTT_USERNAME,
+    password: MQTT_PASSWORD,
+  };
+}
 
 // MQTT client connected events
 client1.on("connect", () => {
