@@ -2,7 +2,8 @@ require("dotenv").config();
 const mqtt = require("mqtt");
 
 // MQTT broker details
-const { MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD } = process.env;
+const { MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD, TOPIC_PREFIX } =
+  process.env;
 
 const MqttUrl = `${MQTT_HOST}:${MQTT_PORT}`;
 
@@ -17,10 +18,33 @@ function isNighttime() {
   return currentHour >= 22 || currentHour < 6;
 }
 
-// Create MQTT clients
-const client1 = mqtt.connect(MqttUrl, createOptions("mqtt-client-1"));
-const client2 = mqtt.connect(MqttUrl, createOptions("mqtt-client-2"));
-const client3 = mqtt.connect(MqttUrl, createOptions("mqtt-client-3"));
+for (let i = 0; i < 20; i++) {
+  const client = mqtt.connect(MqttUrl, createOptions(`mqtt-client-${i}`));
+  client.on("connect", () => {
+    console.log(`Connected to MQTT broker - Device ${i}`);
+  });
+  client.on("error", (err) => {
+    console.error(`Error connecting to MQTT broker - Device ${i}:`, err);
+  });
+  client.on("close", () => {
+    console.log(`Disconnected from MQTT broker - Device ${i}`);
+  });
+
+  // Send random number for each device
+  setTimeout(() => {
+    setInterval(() => {
+      const randomNumber = isNighttime() ? 0 : generateRandomNumber();
+      const deviceTopic = `${TOPIC_PREFIX}/test/d${i}`;
+      client.publish(deviceTopic, randomNumber.toString(), (err) => {
+        if (err) {
+          console.error(`Error publishing message for ${deviceTopic}:`, err);
+        } else {
+          console.log(`Published message for ${deviceTopic}:`, randomNumber);
+        }
+      });
+    }, 60000); // Send message for Device 1 every minute
+  }, getRandomDelay());
+}
 
 // Function to create MQTT options
 function createOptions(clientId) {
@@ -31,59 +55,35 @@ function createOptions(clientId) {
   };
 }
 
-// MQTT client connected events
-client1.on("connect", () => {
-  console.log("Connected to MQTT broker - Device 1");
-});
-
-client2.on("connect", () => {
-  console.log("Connected to MQTT broker - Device 2");
-});
-
-client3.on("connect", () => {
-  console.log("Connected to MQTT broker - Device 3");
-});
-
-// MQTT client error events
-client1.on("error", (err) => {
-  console.error("Error connecting to MQTT broker - Device 1:", err);
-});
-
-client2.on("error", (err) => {
-  console.error("Error connecting to MQTT broker - Device 2:", err);
-});
-
-client3.on("error", (err) => {
-  console.error("Error connecting to MQTT broker - Device 3:", err);
-});
-
-// MQTT client close events
-client1.on("close", () => {
-  console.log("Disconnected from MQTT broker - Device 1");
-});
-
-client2.on("close", () => {
-  console.log("Disconnected from MQTT broker - Device 2");
-});
-
-client3.on("close", () => {
-  console.log("Disconnected from MQTT broker - Device 3");
-});
-
 // Send random number for each device every minute with random delays
 function sendRandomNumber(deviceName, client) {
-  const randomNumber = isNighttime() ? 0 : generateRandomNumber();
+  let randomNumber =
+    isNighttime() || isLunchtime() || isPauseTime()
+      ? 0
+      : generateRandomNumber();
+
   const deviceTopic = `SITI/test/${deviceName}`;
 
-  setTimeout(() => {
-    client.publish(deviceTopic, randomNumber.toString(), (err) => {
-      if (err) {
-        console.error(`Error publishing message for ${deviceName}:`, err);
-      } else {
-        console.log(`Published message for ${deviceName}:`, randomNumber);
-      }
-    });
-  }, getRandomDelay());
+  client.publish(deviceTopic, randomNumber.toString(), (err) => {
+    if (err) {
+      console.error(`Error publishing message for ${deviceName}:`, err);
+    } else {
+      console.log(`Published message for ${deviceName}:`, randomNumber);
+    }
+  });
+}
+
+// Check if it's lunchtime (e.g., between 12 PM and 1 PM)
+function isLunchtime() {
+  const currentHour = new Date().getHours();
+  const currentMinute = new Date().getMinutes();
+  return currentHour === 12 && currentMinute >= 0 && currentMinute < 1;
+}
+
+// Check if it's time for pause (e.g., between 2 PM and 3 PM)
+function isPauseTime() {
+  const currentHour = new Date().getHours();
+  return currentHour === 14;
 }
 
 // Generate random delay between 0 and 30 seconds
@@ -104,16 +104,3 @@ function generateRandomNumber() {
     return getRandomNumber(80, 85); // Remaining 60% probability for values between 80 and 85
   }
 }
-
-// Send random number for each device
-setInterval(() => {
-  sendRandomNumber("d01", client1);
-}, 60000); // Send message for Device 1 every minute
-
-setInterval(() => {
-  sendRandomNumber("d02", client2);
-}, 60000); // Send message for Device 2 every minute
-
-setInterval(() => {
-  sendRandomNumber("d03", client3);
-}, 60000); // Send message for Device 3 every minute
