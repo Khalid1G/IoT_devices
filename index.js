@@ -44,6 +44,32 @@ client3.on("connect", () => {
   console.log("Connected to MQTT broker - Device 3");
 });
 
+// MQTT client error events
+client1.on("error", (err) => {
+  console.error("Error connecting to MQTT broker - Device 1:", err);
+});
+
+client2.on("error", (err) => {
+  console.error("Error connecting to MQTT broker - Device 2:", err);
+});
+
+client3.on("error", (err) => {
+  console.error("Error connecting to MQTT broker - Device 3:", err);
+});
+
+// MQTT client close events
+client1.on("close", () => {
+  console.log("Disconnected from MQTT broker - Device 1");
+});
+
+client2.on("close", () => {
+  console.log("Disconnected from MQTT broker - Device 2");
+});
+
+client3.on("close", () => {
+  console.log("Disconnected from MQTT broker - Device 3");
+});
+
 // Send random number for each device every minute with random delays
 function sendRandomNumber(deviceName, client) {
   const randomNumber = isNighttime() ? 0 : generateRandomNumber();
