@@ -35,7 +35,7 @@ for (let i = 1; i < 11; i++) {
   setTimeout(() => {
     setInterval(() => {
       const randomNumber = isNighttime() ? 0 : generateRandomNumber();
-      const deviceTopic = `${TOPIC_PREFIX}/test/d${i}`;
+      const deviceTopic = `${TOPIC_PREFIX}/test/d${device}`;
       client.publish(deviceTopic, randomNumber.toString(), (err) => {
         if (err) {
           console.error(`Error publishing message for ${deviceTopic}:`, err);
