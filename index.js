@@ -14,27 +14,24 @@ function getRandomNumber(min, max) {
 
 // Check if it's nighttime for the given shift
 function isNighttime(shift) {
+  const currentHour = new Date().getHours();
   if (shift === "day") {
-    const currentHour = new Date().getHours();
     return currentHour >= 22 || currentHour < 6; // Nighttime between 10 PM and 6 AM for day shift
   } else if (shift === "night") {
-    const currentHour = new Date().getHours();
     return currentHour >= 6 && currentHour < 14; // Nighttime between 6 AM and 2 PM for night shift
   } else if (shift === "evening") {
-    const currentHour = new Date().getHours();
     return currentHour >= 14 && currentHour < 22; // Nighttime between 2 PM and 10 PM for evening shift
   }
 }
 
 // Check if it's pause time for the given shift
 function isPauseTime(shift) {
+  const currentHour = new Date().getHours();
   if (shift === "day") {
     return false; // No pause time during the day shift
   } else if (shift === "night") {
-    const currentHour = new Date().getHours();
     return currentHour === 0 || currentHour === 1; // Pause time between 12 AM and 1 AM for night shift
   } else if (shift === "evening") {
-    const currentHour = new Date().getHours();
     return currentHour === 18 || currentHour === 19; // Pause time between 6 PM and 7 PM for evening shift
   }
 }
@@ -70,9 +67,9 @@ function startSendingMessages(deviceName, client, shift) {
       let randomNumber;
 
       if (isNighttime(shift) || isPauseTime(shift)) {
-        randomNumber = 0;
+        randomNumber = 0; // Send 0 during nighttime or pause time
       } else {
-        randomNumber = generateRandomNumber();
+        randomNumber = generateRandomNumber(); // Send random number
       }
 
       const deviceTopic = `${TOPIC_PREFIX}/test/d${deviceName}`;
@@ -83,7 +80,7 @@ function startSendingMessages(deviceName, client, shift) {
           console.log(`Published message for ${deviceTopic}:`, randomNumber);
         }
       });
-    }, 60000); // Send message for Device 1 every minute
+    }, 60000); // Send message every minute
   }, getRandomDelay());
 }
 
@@ -104,10 +101,10 @@ function startSimulation() {
       MqttUrl,
       createOptions(`mqtt-client-${device}`)
     );
+    const shift = getShift(device);
 
     client.on("connect", () => {
       console.log(`Connected to MQTT broker - Device ${device}`);
-      const shift = getShift(device);
       startSendingMessages(device, client, shift);
     });
 
