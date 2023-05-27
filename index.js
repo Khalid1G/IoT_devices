@@ -36,11 +36,6 @@ function isPauseTime(shift) {
   }
 }
 
-// Generate random pause duration between 1 and 3 hours
-function getRandomPauseDuration() {
-  return Math.floor(Math.random() * 3) + 1;
-}
-
 // Generate random delay between 0 and 50 seconds
 function getRandomDelay() {
   return Math.random() * 50000;
@@ -62,7 +57,7 @@ function generateRandomNumber() {
 
 // Function to start sending messages for a device
 function startSendingMessages(deviceName, client, shift) {
-  setTimeout(() => {
+  let c = setTimeout(() => {
     setInterval(() => {
       let randomNumber;
 
@@ -72,7 +67,7 @@ function startSendingMessages(deviceName, client, shift) {
         randomNumber = generateRandomNumber(); // Send random number
       }
 
-      const deviceTopic = `${TOPIC_PREFIX}/test/d${deviceName}`;
+      const deviceTopic = `${TOPIC_PREFIX}/test/d${deviceName}/counter`;
       client.publish(deviceTopic, randomNumber.toString(), (err) => {
         if (err) {
           console.error(`Error publishing message for ${deviceTopic}:`, err);
@@ -80,7 +75,8 @@ function startSendingMessages(deviceName, client, shift) {
           console.log(`Published message for ${deviceTopic}:`, randomNumber);
         }
       });
-    }, 60000); // Send message every minute
+    }, 6000); // Send message every minute
+    clearTimeout(c);
   }, getRandomDelay());
 }
 
@@ -131,3 +127,12 @@ function getShift(device) {
 
 // Start the simulation
 startSimulation();
+
+process.on("SIGTERM", () => {
+  console.log("SIGTERM signal received.");
+  process.exit(0);
+});
+process.on("SIGINT", () => {
+  console.log("SIGINT signal received.");
+  process.exit(0);
+});
