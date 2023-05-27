@@ -57,27 +57,28 @@ function generateRandomNumber() {
 
 // Function to start sending messages for a device
 function startSendingMessages(deviceName, client, shift) {
-  let c = setTimeout(() => {
-    setInterval(() => {
-      let randomNumber;
+  const sendMessage = () => {
+    let randomNumber;
 
-      if (isNighttime(shift) || isPauseTime(shift)) {
-        randomNumber = 0; // Send 0 during nighttime or pause time
+    if (isNighttime(shift) || isPauseTime(shift)) {
+      randomNumber = 0; // Send 0 during nighttime or pause time
+    } else {
+      randomNumber = generateRandomNumber(); // Send random number
+    }
+
+    const deviceTopic = `${TOPIC_PREFIX}/test/d${deviceName}/counter`;
+    client.publish(deviceTopic, randomNumber.toString(), (err) => {
+      if (err) {
+        console.error(`Error publishing message for ${deviceTopic}:`, err);
       } else {
-        randomNumber = generateRandomNumber(); // Send random number
+        console.log(`Published message for ${deviceTopic}:`, randomNumber);
       }
+    });
 
-      const deviceTopic = `${TOPIC_PREFIX}/test/d${deviceName}/counter`;
-      client.publish(deviceTopic, randomNumber.toString(), (err) => {
-        if (err) {
-          console.error(`Error publishing message for ${deviceTopic}:`, err);
-        } else {
-          console.log(`Published message for ${deviceTopic}:`, randomNumber);
-        }
-      });
-    }, 60000); // Send message every minute
-    clearTimeout(c);
-  }, getRandomDelay());
+    setTimeout(sendMessage, 60000); // Schedule the next message after a minute
+  };
+
+  setTimeout(sendMessage, getRandomDelay()); // Start the message sending with a random delay
 }
 
 // Function to create MQTT options
