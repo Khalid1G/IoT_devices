@@ -75,7 +75,7 @@ function startSendingMessages(deviceName, client, shift) {
           console.log(`Published message for ${deviceTopic}:`, randomNumber);
         }
       });
-    }, 6000); // Send message every minute
+    }, 60000); // Send message every minute
     clearTimeout(c);
   }, getRandomDelay());
 }
