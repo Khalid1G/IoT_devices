@@ -55,11 +55,7 @@ function generateRandomNumber() {
   }
 }
 
-// Function to start sending messages for a device
-// Function to start sending messages for a device
 function startSendingMessages(deviceName, client, shift) {
-  let timer; // Declare timer variable here
-
   const sendMessage = () => {
     let randomNumber;
 
@@ -77,12 +73,13 @@ function startSendingMessages(deviceName, client, shift) {
         console.log(`Published message for ${deviceTopic}:`, randomNumber);
       }
     });
-
-    clearTimeout(timer); // Clear the previous setTimeout
-    timer = setTimeout(sendMessage, 60000); // Schedule the next message after a minute
   };
 
-  timer = setTimeout(sendMessage, getRandomDelay()); // Start the message sending with a random delay
+  // Start the message sending with a random delay
+  setTimeout(() => {
+    sendMessage(); // Send the first message immediately
+    setInterval(sendMessage, 60000); // Schedule subsequent messages every minute
+  }, getRandomDelay());
 }
 
 // Function to create MQTT options
