@@ -58,6 +58,8 @@ function generateRandomNumber() {
 // Function to start sending messages for a device
 // Function to start sending messages for a device
 function startSendingMessages(deviceName, client, shift) {
+  let timer; // Declare timer variable here
+
   const sendMessage = () => {
     let randomNumber;
 
@@ -80,7 +82,7 @@ function startSendingMessages(deviceName, client, shift) {
     timer = setTimeout(sendMessage, 60000); // Schedule the next message after a minute
   };
 
-  let timer = setTimeout(sendMessage, getRandomDelay()); // Start the message sending with a random delay
+  timer = setTimeout(sendMessage, getRandomDelay()); // Start the message sending with a random delay
 }
 
 // Function to create MQTT options
