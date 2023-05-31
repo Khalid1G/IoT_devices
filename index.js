@@ -129,10 +129,6 @@ function getShift(device) {
 // Start the simulation
 startSimulation();
 
-process.on("SIGTERM", () => {
-  console.log("SIGTERM signal received.");
-  process.exit(0);
-});
 process.on("SIGINT", () => {
   console.log("SIGINT signal received.");
   process.exit(0);
