@@ -36,9 +36,8 @@ function isPauseTime(shift) {
   }
 }
 
-// Generate random delay between 0 and 50 seconds
 function getRandomDelay() {
-  return Math.random() * 50000;
+  return Math.floor(Math.random() * 49100) + 900;
 }
 
 // Generate random number based on probability distribution
