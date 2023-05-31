@@ -37,7 +37,7 @@ function isPauseTime(shift) {
 }
 
 function getRandomDelay() {
-  return Math.floor(Math.random() * 49100) + 900;
+  return getRandomNumber(100, 40000) + getRandomNumber(0, 1000);
 }
 
 // Generate random number based on probability distribution
