@@ -36,10 +36,6 @@ function isPauseTime(shift) {
   }
 }
 
-function getRandomDelay() {
-  return getRandomNumber(100, 40000) + getRandomNumber(0, 1000);
-}
-
 // Generate random number based on probability distribution
 function generateRandomNumber() {
   const probability = Math.random();
@@ -74,11 +70,13 @@ function startSendingMessages(deviceName, client, shift) {
     });
   };
 
-  // Start the message sending with a random delay
+  // Start the message sending with a delay of 60 seconds
   setTimeout(() => {
     sendMessage(); // Send the first message immediately
-    setInterval(sendMessage, 60000); // Schedule subsequent messages every minute
-  }, getRandomDelay());
+
+    // Schedule subsequent messages every 60 seconds
+    setInterval(sendMessage, 60000);
+  }, getRandomNumber(0, 60000)); // Introduce a random delay between 0 and 60 seconds
 }
 
 // Function to create MQTT options
@@ -92,7 +90,7 @@ function createOptions(clientId) {
 
 // Start the simulation
 function startSimulation() {
-  for (let i = 1; i < 21; i++) {
+  for (let i = 1; i < 10; i++) {
     const device = i.toString().padStart(2, "0");
     const client = mqtt.connect(
       MqttUrl,
@@ -128,8 +126,3 @@ function getShift(device) {
 
 // Start the simulation
 startSimulation();
-
-process.on("SIGINT", () => {
-  console.log("SIGINT signal received.");
-  process.exit(0);
-});
