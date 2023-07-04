@@ -1,18 +1,71 @@
+// Load environment variables from .env file
 require("dotenv").config();
+
+// Import the MQTT library
 const mqtt = require("mqtt");
 
-// MQTT broker details
-const { MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD, TOPIC_PREFIX } =
-  process.env;
+// Import the node-cron library
+const cron = require("node-cron");
 
+// Extract MQTT broker details from environment variables
+const {
+  MQTT_HOST,
+  MQTT_PORT,
+  MQTT_USERNAME,
+  MQTT_PASSWORD,
+  TOPIC_PREFIX,
+  DEVICES_NUMBER,
+} = process.env;
+
+if (
+  !MQTT_HOST ||
+  !MQTT_PORT ||
+  !MQTT_USERNAME ||
+  !TOPIC_PREFIX ||
+  !DEVICES_NUMBER
+) {
+  console.error(
+    "Please make sure that the following environment variables are set: MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD, TOPIC_PREFIX, DEVICES_NUMBER"
+  );
+  process.exit(1);
+}
+
+// Construct the MQTT broker URL
 const MqttUrl = `${MQTT_HOST}:${MQTT_PORT}`;
 
-// Generate a random number between min and max (inclusive)
+/**
+ * Generate a random number between min and max (inclusive).
+ *
+ * @param {number} min - The minimum value.
+ * @param {number} max - The maximum value.
+ * @returns {number} The generated random number.
+ */
 function getRandomNumber(min, max) {
+  // Suggestion 1: Validate that 'min' is less than or equal to 'max'.
+  if (min > max) {
+    throw new Error("'min' must be less than or equal to 'max'");
+  }
+
+  // Suggestion 2: Add validation to ensure that 'min' and 'max' are integers.
+  if (!Number.isInteger(min) || !Number.isInteger(max)) {
+    throw new Error("'min' and 'max' must be integers");
+  }
+
+  // Suggestion 3: Add a check to handle the case where 'min' and 'max' are equal.
+  if (min === max) {
+    return min;
+  }
+
+  // Original code
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// Check if it's nighttime for the given shift
+/**
+ * Check if it's nighttime for the given shift.
+ *
+ * @param {string} shift - The shift value.
+ * @returns {boolean} True if it's nighttime, false otherwise.
+ */
 function isNighttime(shift) {
   const currentHour = new Date().getHours();
   if (shift === "day") {
@@ -24,7 +77,12 @@ function isNighttime(shift) {
   }
 }
 
-// Check if it's pause time for the given shift
+/**
+ * Check if it's pause time for the given shift.
+ *
+ * @param {string} shift - The shift value.
+ * @returns {boolean} True if it's pause time, false otherwise.
+ */
 function isPauseTime(shift) {
   const currentHour = new Date().getHours();
   if (shift === "day") {
@@ -36,7 +94,11 @@ function isPauseTime(shift) {
   }
 }
 
-// Generate random number based on probability distribution
+/**
+ * Generate random number based on probability distribution.
+ *
+ * @returns {number} The generated random number.
+ */
 function generateRandomNumber() {
   const probability = Math.random();
   if (probability < 0.1) {
@@ -50,6 +112,13 @@ function generateRandomNumber() {
   }
 }
 
+/**
+ * Start sending MQTT messages for a device.
+ *
+ * @param {string} deviceName - The name of the device.
+ * @param {Object} client - The MQTT client object.
+ * @param {string} shift - The shift value.
+ */
 function startSendingMessages(deviceName, client, shift) {
   const sendMessage = () => {
     let randomNumber;
@@ -73,13 +142,19 @@ function startSendingMessages(deviceName, client, shift) {
   // Start the message sending with a delay of 60 seconds
   setTimeout(() => {
     sendMessage(); // Send the first message immediately
-
-    // Schedule subsequent messages every 60 seconds
-    setInterval(sendMessage, 60000);
+    // Schedule subsequent messages every 60 seconds using node-cron
+    cron.schedule("*/60 * * * * *", () => {
+      sendMessage();
+    });
   }, getRandomNumber(0, 60000)); // Introduce a random delay between 0 and 60 seconds
 }
 
-// Function to create MQTT options
+/**
+ * Create MQTT options for the client.
+ *
+ * @param {string} clientId - The client ID.
+ * @returns {Object} The MQTT options.
+ */
 function createOptions(clientId) {
   return {
     clientId: clientId,
@@ -88,10 +163,12 @@ function createOptions(clientId) {
   };
 }
 
-// Start the simulation
+/**
+ * Start the simulation by connecting devices to the MQTT broker and sending messages.
+ */
 function startSimulation() {
-  for (let i = 1; i < 10; i++) {
-    const device = i.toString().padStart(2, "0");
+  for (let i = 0; i < DEVICES_NUMBER; i++) {
+    const device = (i + 1).toString().padStart(2, "0");
     const client = mqtt.connect(
       MqttUrl,
       createOptions(`mqtt-client-${device}`)
@@ -113,14 +190,19 @@ function startSimulation() {
   }
 }
 
-// Get the shift for the device
+/**
+ * Get the shift for the device.
+ *
+ * @param {string} device - The device name.
+ * @returns {string} The shift value.
+ */
 function getShift(device) {
-  if (device <= 5) {
-    return "day"; // Devices 01-05 on day shift
-  } else if (device <= 10) {
-    return "night"; // Devices 06-10 on night shift
+  if (device <= 10 || device >= 30) {
+    return "day";
+  } else if (device <= 15) {
+    return "night";
   } else {
-    return "evening"; // Devices 11-20 on evening shift
+    return "evening";
   }
 }
 
